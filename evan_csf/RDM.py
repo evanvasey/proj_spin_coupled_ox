@@ -42,7 +42,7 @@ def kronecker_delta(i,j):
         return 1
 
 # computes matrix element of 2-RDM
-def twoRDM_element(P,Q,R,S,bra,ket):
+def twoRDM_element(P,Q,R,S,bra,ket,spin_int=True):
     
     pf_bra = bra[0]
     pf_ket = ket[0]
@@ -71,25 +71,28 @@ def twoRDM_element(P,Q,R,S,bra,ket):
         SQ = -1
 
     # the kronecker are used to take into account the spin integral
-    return pf_all*PR*SQ*kronecker_delta(spin_P,spin_Q)*kronecker_delta(spin_R,spin_S)
+    if spin_int:
+        return pf_all*PR*SQ*kronecker_delta(spin_P,spin_Q)*kronecker_delta(spin_R,spin_S)
+    else:
+        return pf_all*PR*SQ
 
 
 
 
 # PQRS with a\dagger_P a\dagger_R a_S a_Q
 # get 2-RDM for zero differences between bra and ket
-def two_rdm_zero_diff(bra,ket,same_orbitals_index):
+def two_rdm_zero_diff(bra,ket,same_orbitals_index,spin_int=True):
     n_dim = len(bra)-1
     two_rdm = np.zeros((n_dim,n_dim,n_dim,n_dim))
     for i in same_orbitals_index:
         for j in same_orbitals_index:
-            two_rdm[i,j,j,i] = twoRDM_element(i,j,j,i,bra,ket)
-            two_rdm[i,i,j,j] = twoRDM_element(i,i,j,j,bra,ket)
+            two_rdm[i,j,j,i] = twoRDM_element(i,j,j,i,bra,ket,spin_int=True)
+            two_rdm[i,i,j,j] = twoRDM_element(i,i,j,j,bra,ket,spin_int=True)
     return two_rdm
 
 # PQRS with a\dagger_P a\dagger_R a_S a_Q
 # get 2-RDM for two differences between bra and ket
-def two_rdm_two_diff(bra,ket,differences_index,same_orbitals_index):
+def two_rdm_two_diff(bra,ket,differences_index,same_orbitals_index,spin_int=True):
     n_dim = len(bra)-1
     two_rdm = np.zeros((n_dim,n_dim,n_dim,n_dim))
     
@@ -103,15 +106,15 @@ def two_rdm_two_diff(bra,ket,differences_index,same_orbitals_index):
 
 
     for i in same_orbitals_index:
-        two_rdm[a,b,i,i] = twoRDM_element(a,b,i,i,bra,ket)
-        two_rdm[a,i,i,b] = twoRDM_element(a,i,i,b,bra,ket)
-        two_rdm[i,b,a,i] = twoRDM_element(i,b,a,i,bra,ket)
-        two_rdm[i,i,a,b] = twoRDM_element(i,i,a,b,bra,ket)
+        two_rdm[a,b,i,i] = twoRDM_element(a,b,i,i,bra,ket,spin_int=True)
+        two_rdm[a,i,i,b] = twoRDM_element(a,i,i,b,bra,ket,spin_int=True)
+        two_rdm[i,b,a,i] = twoRDM_element(i,b,a,i,bra,ket,spin_int=True)
+        two_rdm[i,i,a,b] = twoRDM_element(i,i,a,b,bra,ket,spin_int=True)
     return two_rdm
 
 # \gamma_PQRS with a\dagger_P a\dagger_R a_S a_Q
 # get 2_RDM for four differences between bra and ket
-def two_rdm_four_diff(bra,ket,differences_index):
+def two_rdm_four_diff(bra,ket,differences_index,spin_int=True):
     n_dim = len(bra)-1
     two_rdm = np.zeros((n_dim,n_dim,n_dim,n_dim))
     
@@ -133,15 +136,21 @@ def two_rdm_four_diff(bra,ket,differences_index):
     pf_all = pf_overlap*pf_a*pf_b*pf_c*pf_d
     
     # two_rdm[P,Q,R,S] corresponds to a\dagger_P a\dagger_R a_S a_Q
-    two_rdm[a,c,b,d] = pf_all*kronecker_delta(spin_a,spin_c)*kronecker_delta(spin_b,spin_d) 
-    two_rdm[a,d,b,c] = pf_all*(-1)*kronecker_delta(spin_a,spin_d)*kronecker_delta(spin_b,spin_c)
-    two_rdm[b,c,a,d] = pf_all*(-1)*kronecker_delta(spin_b,spin_c)*kronecker_delta(spin_a,spin_d)
-    two_rdm[b,d,a,c] = pf_all*kronecker_delta(spin_b,spin_d)*kronecker_delta(spin_a,spin_c)
+    if spin_int:
+        two_rdm[a,c,b,d] = pf_all*kronecker_delta(spin_a,spin_c)*kronecker_delta(spin_b,spin_d) 
+        two_rdm[a,d,b,c] = pf_all*(-1)*kronecker_delta(spin_a,spin_d)*kronecker_delta(spin_b,spin_c)
+        two_rdm[b,c,a,d] = pf_all*(-1)*kronecker_delta(spin_b,spin_c)*kronecker_delta(spin_a,spin_d)
+        two_rdm[b,d,a,c] = pf_all*kronecker_delta(spin_b,spin_d)*kronecker_delta(spin_a,spin_c)
+    else:
+        two_rdm[a,c,b,d] = pf_all
+        two_rdm[a,d,b,c] = pf_all*(-1)
+        two_rdm[b,c,a,d] = pf_all*(-1)
+        two_rdm[b,d,a,c] = pf_all
 
     return two_rdm
 
 # get 2-RDM
-def get_two_rdm_fast(bra,ket,return_zero=False):
+def get_two_rdm_fast(bra,ket,return_zero=False,spin_int=True):
     n_dim = len(bra)-1
     diff,diff_index,orbitals_index = find_orbitals_differences(bra,ket)
     if diff > 4:
@@ -150,26 +159,26 @@ def get_two_rdm_fast(bra,ket,return_zero=False):
         else:
             return np.zeros((n_dim,n_dim,n_dim,n_dim))
     if diff == 4:
-        return two_rdm_four_diff(bra,ket,diff_index)
+        return two_rdm_four_diff(bra,ket,diff_index,spin_int=True)
     if diff == 2:
-        return two_rdm_two_diff(bra,ket,diff_index,orbitals_index)
+        return two_rdm_two_diff(bra,ket,diff_index,orbitals_index,spin_int=True)
     if diff == 0:
-        return two_rdm_zero_diff(bra,ket,orbitals_index)
+        return two_rdm_zero_diff(bra,ket,orbitals_index,spin_int=True)
 
 
 # get 2-RDM for multiconfigurational states
 # added possibility of having different mc state for the bra and ket
-def get_two_rdm_mc_fast(kets,coeffs,bras=None,bras_coeffs=None):
+def get_two_rdm_mc_fast(kets,coeffs,bras=None,bras_coeffs=None,spin_int=True):
     n_dim = len(kets[0]) -1 
     two_rdm_mc = np.zeros((n_dim,n_dim,n_dim,n_dim))
     if bras==None and bras_coeffs==None:
         for bra,ci in zip(kets,coeffs):
             for ket,cj in zip(kets,coeffs):
-                two_rdm_mc += get_two_rdm_fast(bra,ket)*ci*cj
+                two_rdm_mc += get_two_rdm_fast(bra,ket,spin_int=True)*ci*cj
     else:
         for bra,ci in zip(bras,bras_coeffs):
             for ket,cj in zip(kets,coeffs):
-                two_rdm_mc += get_two_rdm_fast(bra,ket)*ci*cj
+                two_rdm_mc += get_two_rdm_fast(bra,ket,spin_int=True)*ci*cj
     return two_rdm_mc
 
 # get the spatial 2-RDM
@@ -188,7 +197,7 @@ def get_spatial_two_rdm_fast(two_rdm):
 
 
 # computes matrix element of 1-RDM
-def oneRDM_element(P,Q,bra,ket):
+def oneRDM_element(P,Q,bra,ket,spin_int=True):
 
     pf_bra = bra[0]
     pf_ket = ket[0]
@@ -199,31 +208,34 @@ def oneRDM_element(P,Q,bra,ket):
 
     pf_all = pf_overlap*pf_P*pf_Q
 
-    return pf_all*kronecker_delta(spin_P,spin_Q)
+    if spin_int:
+        return pf_all*kronecker_delta(spin_P,spin_Q)
+    else:
+        return pf_all
 
 # get 1-RDM for zero differences between bra and ket
-def one_rdm_zero_diff(bra,ket,same_orbitals_index):
+def one_rdm_zero_diff(bra,ket,same_orbitals_index,spin_int=True):
     n_dim = len(bra)-1
     one_rdm = np.zeros((n_dim,n_dim))
     for i in same_orbitals_index:
-        one_rdm[i,i] = oneRDM_element(i,i,bra,ket) 
+        one_rdm[i,i] = oneRDM_element(i,i,bra,ket,spin_int=True) 
 
     return one_rdm
 
 # get 1-RDM for two differences between bra and ket
-def one_rdm_two_diff(bra,ket,differences_index):
+def one_rdm_two_diff(bra,ket,differences_index,spin_int=True):
     n_dim = len(bra)-1
     one_rdm = np.zeros((n_dim,n_dim))
     
     a = differences_index[0]
     b = differences_index[1]
 
-    one_rdm[a,b] = oneRDM_element(a,b,bra,ket)
+    one_rdm[a,b] = oneRDM_element(a,b,bra,ket,spin_int=True)
 
     return one_rdm
 
 # get 1-RDM
-def get_one_rdm_fast(bra,ket,return_zero=False):
+def get_one_rdm_fast(bra,ket,return_zero=False,spin_int=True):
     n_dim = len(bra)-1
     diff,diff_index,same_orbitals_index = find_orbitals_differences(bra,ket)
     if diff > 2:
@@ -232,9 +244,9 @@ def get_one_rdm_fast(bra,ket,return_zero=False):
         else:
             return np.zeros((n_dim,n_dim))
     if diff == 2:
-        return one_rdm_two_diff(bra,ket,diff_index)
+        return one_rdm_two_diff(bra,ket,diff_index,spin_int=True)
     if diff == 0:
-        return one_rdm_zero_diff(bra,ket,same_orbitals_index)
+        return one_rdm_zero_diff(bra,ket,same_orbitals_index,spin_int=True)
 
 # get 1-RDM for multiconfigurational states
 # added possibility of having different mc state for the bra and ket
@@ -245,11 +257,11 @@ def get_one_rdm_mc_fast(kets, coeffs,bras=None,bras_coeffs=None):
     if bras==None and bras_coeffs==None:
         for bra,ci in zip(kets,coeffs):
             for ket,cj in zip(kets,coeffs):
-                one_rdm_mc += get_one_rdm_fast(bra,ket)*ci*cj
+                one_rdm_mc += get_one_rdm_fast(bra,ket,spin_int=True)*ci*cj
     else:
         for bra,ci in zip(bras,bras_coeffs):
             for ket,cj in zip(kets,coeffs):
-                one_rdm_mc += get_one_rdm_fast(bra,ket)*ci*cj
+                one_rdm_mc += get_one_rdm_fast(bra,ket,spin_int=True)*ci*cj
     return one_rdm_mc
 
 
