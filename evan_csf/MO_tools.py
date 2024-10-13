@@ -15,7 +15,6 @@ H_energy = -0.46658185
 
 
 # FULL MOLECULAR HAMILTONIAN
-
 def full_H(kets,coeffs,h_matrix,g_matrix,bras=None,bras_coeffs=None):
     n_dim = len(kets[0]) -1
     n_half = n_dim//2

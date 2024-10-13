@@ -27,7 +27,7 @@ r_array = np.arange(0.5,1.5,0.05)
 ### get data for H4 ###
 
 # separated states
-x1 = get_Ecurve_CSF_RHF(r_array,[[1.0,1,0,1,0,1,0,1,0],[1.0,1,1,0,0,1,1,0,0]],[csf_list_dets,csf_list_dets_permute],[csf_list_coeffs,csf_list_coeffs],H4_mol,HF_coeffs=np.array([[1,1,1,1],[1,1,-1,-1],[1,-1.0,-1.0,1.0],[1.0,-1.0,1.0,-1.0]]),number_sloc_states=4,sloc_grouped=False,get_sloc_func=get_sloc_H4,RHF_states_grouped=False,savetxt="H4_curve")
+x1 = get_Ecurve_CSF_RHF(r_array,[[1.0,1,0,1,0,1,0,1,0],[1.0,1,1,0,0,1,1,0,0]],[csf_list_dets,csf_list_dets_permute],[csf_list_coeffs,csf_list_coeffs],H4_mol,HF_coeffs=np.array([[1,1,1,1],[1,1,-1,-1],[1,-1.0,-1.0,1.0],[1.0,-1.0,1.0,-1.0]]),number_sloc_states=4,sloc_grouped=False,get_sloc_func=get_sloc_H4,RHF_states_grouped=False,savetxt="data/H4_curve")
 #x1 = get_Ecurve_CSF_RHF(r_array,[[1.0,1,0,1,0,1,0,1,0],[1.0,1,1,0,0,1,1,0,0]],[],[],H4_mol,HF_coeffs=np.array([[1,1,1,1],[1,1,-1,-1],[1,-1.0,-1.0,1.0],[1.0,-1.0,1.0,-1.0]]),number_sloc_states=0,sloc_grouped=False,get_sloc_func=get_sloc_empty,RHF_states_grouped=False,savetxt="H4_curve")
 # with different HF
 #x2 = get_Ecurve_CSF_RHF(r_array,[[1.0,1,0,1,0,1,0,1,0],[1.0,1,1,0,0,1,1,0,0]],[csf_list_dets,csf_list_dets_permute],[csf_list_coeffs,csf_list_coeffs],H4_mol,HF_coeffs=np.array([[1,0,1,1],[1,1,0,-1],[1,0,-1,1],[1,-1,0,-1]]),number_sloc_states=4,sloc_grouped=False,get_sloc_func=get_sloc_H4,RHF_states_grouped=False,savetxt="H4_curve_hf")
