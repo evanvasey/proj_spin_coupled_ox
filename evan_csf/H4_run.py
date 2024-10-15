@@ -1,5 +1,12 @@
-from MO_tools import get_Ecurve_RHF_CSF
+import numpy as np
+from Hamiltonian import get_Ecurve_CSF_RHF
+from molecules import H4_mol
+from Lowdin_Orthogonalisation import get_symmetric_mo_coeffs
+from sloc_states import get_sloc_H4
 from plot import plot_E_curve,plot_ci_curve 
+from FCI import run_fci_over_r_array_and_save
+from CSF import CSF
+from CSF_tools import permute_csf,normalise_coeffs_det
 
 # get CSFs
 r = 1.2
@@ -45,5 +52,20 @@ x1 = get_Ecurve_CSF_RHF(r_array,[[1.0,1,0,1,0,1,0,1,0],[1.0,1,1,0,0,1,1,0,0]],[c
 #x = get_Ecurve_CSF_RHF(r_array,[[1.0,1,0,1,0,1,0,1,0],[1.0,1,1,0,0,1,1,0,0]],csf_list,csf_coeffs,H4_mol,RHF_states_grouped=True,bond_length=None,savetxt="H4_curve")
 
 
-plot_E_curve("H4_curve.data","H4_curve.pdf",[r"$\Phi_{LC}$",r"$\Phi_{RHF1}$",r"$\Phi_{RHF1}$",r"$\Phi_2$",r"$\Phi_2$(permute)",r"$\sigma_L$",r"$\sigma_R$",r"$\sigma_T$",r"$\sigma_B$"],(0.7,3.5),(-2.2,-1.0),n_H=4,true_wavefunction="H4_FCI.data",true_wavefunction_index=1)
-plot_ci_curve("H4_curve_coeffs.data","H4_curve_coeffs.pdf",[r"$\Phi_{RHF1}$",r"$\Phi_{RHF2}$",r"$\Phi_2$",r"$\Phi_2$(permute)",r"$\sigma_L$",r"$\sigma_R$",r"$\sigma_T$",r"$\sigma_B$"])
+### FCI ###
+
+fci_energies,mcscf_energies = run_fci_over_r_array_and_save(r_array, H4_mol,4,4,savetxt="data/H4_FCI")
+plt.plot(r_array,fci_energies)
+plt.plot(r_array,mcscf_energies)
+plt.show()
+
+### FCI END ###
+
+
+
+
+
+
+
+plot_E_curve("data/H4_curve.data","H4_curve.pdf",[r"$\Phi_{LC}$",r"$\Phi_{RHF1}$",r"$\Phi_{RHF1}$",r"$\Phi_2$",r"$\Phi_2$(permute)",r"$\sigma_L$",r"$\sigma_R$",r"$\sigma_T$",r"$\sigma_B$"],(0.7,3.5),(-2.2,-1.0),n_H=4,true_wavefunction="H4_FCI.data",true_wavefunction_index=1)
+plot_ci_curve("data/H4_curve_coeffs.data","H4_curve_coeffs.pdf",[r"$\Phi_{RHF1}$",r"$\Phi_{RHF2}$",r"$\Phi_2$",r"$\Phi_2$(permute)",r"$\sigma_L$",r"$\sigma_R$",r"$\sigma_T$",r"$\sigma_B$"])

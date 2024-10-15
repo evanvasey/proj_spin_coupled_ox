@@ -1,10 +1,6 @@
 import numpy as np
-from RDM import get_one_rdm_mc_fast,get_two_rdm_mc_fast,get_spatial_one_rdm_fast,get_spatial_two_rdm_fast 
-from Lowdin_Orthogonalisation import get_symmetric_mo_coeffs
-from MO_tools import change_h_basis,change_g_basis,mo_basis_change,get_hf_coeffs
-from CSF_tools import normalise_coeffs_det,overlap_CSF,overlap_matrix_CSF
-from sloc_states import get_sloc_empty
-from pyscf import scf
+
+
 
 
 
@@ -75,23 +71,6 @@ def get_H_CSF_matrix(list_CSF_dets,list_CSF_coeffs,h_matrix,g_matrix,energy_nuc)
                 # matrix is symmetric since H is hermitian and we use real wavefunctions
                 H_matrix[i,j] = H_matrix[j,i] 
     return H_matrix
-
-
-# from a list of states composed of dets and coeffs we get their individual energies, the coefficients from the diagonalisation of the matrix and the energy of the L.C. of the states using the coefficients
-def get_energy_from_matrix(list_states_dets,list_states_coeffs,h_lowdin,g_lowdin,energy_nuc):
-    H_matrix = get_H_CSF_matrix(list_states_dets,list_states_coeffs,h_lowdin,g_lowdin,energy_nuc)
-    eigenvalues,eigenvectors = np.linalg.eigh(H_matrix)
-    dets_list = []
-    coeffs_list = []
-    for dets,coeffs,ci in zip(list_states_dets,list_states_coeffs,eigenvectors[:,0]):
-        dets_list += dets
-        coeffs_list += list(np.array(coeffs)*ci)
-    dets_list,coeffs_list = normalise_coeffs_det(dets_list,coeffs_list)
-
-    energy_LC = full_H(dets_list,coeffs_list,h_lowdin,g_lowdin) + energy_nuc
-
-    diag_H_matrix = np.diag(H_matrix) + energy_nuc
-    return energy_LC,eigenvectors[:,0],diag_H_matrix
 
 
 # get the determinants in lowdin basis from dets in RHF basis, if there are multiple RHF determinants we cumulate them into one state
@@ -169,72 +148,3 @@ def get_Ecurve_CSF_RHF(r_array,RHF_states,list_CSF_dets,list_CSF_coeffs,molecule
         RHF_energy_list.append(RHF_energy)
         initial_guess_hf = hf.mo_coeff
         hf_coeffs = initial_guess_hf
-        if HF_coeffs is not None:
-            hf_coeffs = get_hf_coeffs(HF_coeffs,lowdin_coeffs,overlap)
-            
-        
-                                                                                                            
-        # to save cube files that allows to visualise the orbitals with VMD
-        #tools.cubegen.orbital(mol, 'rhf_1.cube', hf.mo_coeff[:, 0]) 
-        #tools.cubegen.orbital(mol, 'rhf_2.cube', hf.mo_coeff[:, 1]) 
-        #tools.cubegen.orbital(mol, 'rhf_3.cube', hf.mo_coeff[:, 2]) 
-        #tools.cubegen.orbital(mol, 'rhf_4.cube', hf.mo_coeff[:, 3]) 
-                                                                                                            
-                                                                                                            
-        #tools.cubegen.orbital(mol, 'sym_1.cube', hf_coeff[:,0]) 
-        #tools.cubegen.orbital(mol, 'sym_2.cube', hf_coeff[:,1]) 
-        #tools.cubegen.orbital(mol, 'sym_3.cube', hf_coeff[:,2]) 
-        #tools.cubegen.orbital(mol, 'sym_4.cube', hf_coeff[:,3]) 
-        
-        # transform the basis of RHF states into lowdin basis
-        RHF_dets_list,RHF_coeffs_list = RHF_change_basis_func(RHF_states,hf_coeffs,lowdin_coeffs,overlap)
-        
-        # get the states semi localised (core and csf)
-        sloc_states_dets,sloc_states_coeffs = get_sloc_func(hf_coeffs,lowdin_coeffs,overlap,sloc_grouped)
-                                                                                                            
-        # get the list of states for the hamiltonian matrix
-        dets_list_matrix = RHF_dets_list + list_CSF_dets + sloc_states_dets 
-        coeffs_list_matrix = RHF_coeffs_list + list_CSF_coeffs + sloc_states_coeffs 
-                                                                                                            
-        # create the hamiltonian matrix and solve the generalised eigenvalue problem
-        H_matrix = get_H_CSF_matrix(dets_list_matrix,coeffs_list_matrix,h_lowdin,g_lowdin,mol.energy_nuc())
-        S = overlap_matrix_CSF(dets_list_matrix,coeffs_list_matrix)
-        S_inv = np.linalg.inv(S)
-        S_inv_H_matrix = np.matmul(S_inv,H_matrix)
-        eigenvalues,eigenvectors = np.linalg.eig(S_inv_H_matrix)
-        eigenvalue_min = 1000
-                                                                                                            
-        # select the eigenvector corresponding to the lowest eigenvalue
-        for eigenvalue,eigenvector in zip(eigenvalues,eigenvectors.T):
-            if eigenvalue < eigenvalue_min:
-                eigenvalue_min = eigenvalue
-                eigenvector_min = eigenvector
-                                                                                                            
-                                                                                                            
-        dets_list = []
-        coeffs_list = []
-        for dets,coeffs,ci in zip(dets_list_matrix,coeffs_list_matrix,eigenvector_min):
-            dets_list += dets 
-            coeffs_list += list(np.array(coeffs)*np.real(ci))
-        dets_list,coeffs_list = normalise_coeffs_det(dets_list,coeffs_list)
-        energy_LC = full_H(dets_list,coeffs_list,h_lowdin,g_lowdin) + mol.energy_nuc() 
-        
-        diag_H_matrix = np.diag(H_matrix) 
-                                                                                        
-        return_coeffs_line = eigenvector_min
-        return_coeffs_line = np.insert(return_coeffs_line,0,r)
-        return_coeffs_matrix[i] = return_coeffs_line
-                                                                                        
-        return_values_line = np.insert(diag_H_matrix,0,energy_LC)
-        return_values_line = np.insert(return_values_line,0,r)
-        return_values_matrix[i] = return_values_line
-    if bond_length != None:
-        if savetxt !=None:
-            np.savetxt(f"{savetxt}.data",return_values_matrix[1:,:])
-            np.savetxt(f"{savetxt}_coeffs.data",return_coeffs_matrix[1:,:])
-        return RHF_energy_list[1:]
-    else:
-        if savetxt !=None:
-            np.savetxt(f"{savetxt}.data",return_values_matrix)
-            np.savetxt(f"{savetxt}_coeffs.data",return_coeffs_matrix)
-        return RHF_energy_list
