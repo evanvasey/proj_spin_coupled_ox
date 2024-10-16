@@ -1,4 +1,6 @@
+import numpy as np
 from pyscf import gto
+
 
 
 
@@ -35,7 +37,7 @@ def H6_mol(r):
     return mol
 
                                              
-def H2_H_mol(r,h2_bond_length=0.74):
+def H2H_mol(r,h2_bond_length=0.74):
     if r > 0:
         r1 = -h2_bond_length
         r2 =  h2_bond_length + r

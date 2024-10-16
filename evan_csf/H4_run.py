@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from Hamiltonian import get_Ecurve_CSF_RHF
 from molecules import H4_mol
 from Lowdin_Orthogonalisation import get_symmetric_mo_coeffs
