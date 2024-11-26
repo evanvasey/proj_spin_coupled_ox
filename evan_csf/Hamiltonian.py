@@ -172,8 +172,8 @@ def get_Ecurve_CSF_RHF(r_array,RHF_states,list_CSF_dets,list_CSF_coeffs,molecule
         if HF_coeffs is not None:
             hf_coeffs = get_hf_coeffs(HF_coeffs,lowdin_coeffs,overlap)
             
-        
-                                                                                                            
+        print(lowdin_coeffs) 
+        print(overlap)
         # to save cube files that allows to visualise the orbitals with VMD
         #tools.cubegen.orbital(mol, 'rhf_1.cube', hf.mo_coeff[:, 0]) 
         #tools.cubegen.orbital(mol, 'rhf_2.cube', hf.mo_coeff[:, 1]) 
@@ -188,6 +188,7 @@ def get_Ecurve_CSF_RHF(r_array,RHF_states,list_CSF_dets,list_CSF_coeffs,molecule
         
         # transform the basis of RHF states into lowdin basis
         RHF_dets_list,RHF_coeffs_list = RHF_change_basis_func(RHF_states,hf_coeffs,lowdin_coeffs,overlap)
+        print(RHF_dets_list,RHF_coeffs_list)
         
         # get the states semi localised (core and csf)
         sloc_states_dets,sloc_states_coeffs = get_sloc_func(hf_coeffs,lowdin_coeffs,overlap,sloc_grouped)
@@ -199,17 +200,18 @@ def get_Ecurve_CSF_RHF(r_array,RHF_states,list_CSF_dets,list_CSF_coeffs,molecule
         # create the hamiltonian matrix and solve the generalised eigenvalue problem
         H_matrix = get_H_CSF_matrix(dets_list_matrix,coeffs_list_matrix,h_lowdin,g_lowdin,mol.energy_nuc())
         S = overlap_matrix_CSF(dets_list_matrix,coeffs_list_matrix)
+        S[np.abs(S) < 1e-10] = 0
         S_inv = np.linalg.inv(S)
         S_inv_H_matrix = np.matmul(S_inv,H_matrix)
         eigenvalues,eigenvectors = np.linalg.eig(S_inv_H_matrix)
-        eigenvalue_min = 1000
+        eigenvalue_min = eigenvalues[0]
                                                                                                             
         # select the eigenvector corresponding to the lowest eigenvalue
+        print(eigenvalues)
         for eigenvalue,eigenvector in zip(eigenvalues,eigenvectors.T):
-            if eigenvalue < eigenvalue_min:
+            if eigenvalue <= eigenvalue_min:
                 eigenvalue_min = eigenvalue
                 eigenvector_min = eigenvector
-                                                                                                            
                                                                                                             
         dets_list = []
         coeffs_list = []

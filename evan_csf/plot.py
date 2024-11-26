@@ -1,4 +1,6 @@
 import numpy as np 
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt 
 
 
@@ -38,7 +40,8 @@ def plot_E_curve(input_file,output_file,labels,xlim,ylim,n_H=None,true_wavefunct
     plt.xlabel(r"Bond length [$\AA$]")
     plt.ylabel(r"Energy [Ha]")
     plt.savefig(output_file)
-    plt.show()
+    #plt.show()
+    plt.clf()
     return
 def plot_ci_curve(input_file,output_file,labels):
     data = np.genfromtxt(input_file)
@@ -49,6 +52,7 @@ def plot_ci_curve(input_file,output_file,labels):
     plt.xlabel(r"Bond length [$\AA$]")
     plt.ylabel(r"Coefficients")
     plt.savefig(output_file)
-    plt.show()
+    #plt.show()
+    plt.clf()
     return
     

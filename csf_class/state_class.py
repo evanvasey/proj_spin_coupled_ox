@@ -1,4 +1,6 @@
+import numpy as np
 from CSF_tools import permute_vector,permute_det
+import itertools
 
 
 
@@ -37,6 +39,13 @@ def permute_det(det,permutation):
 
 ### FUNCTIONS FOR BASIS TRANSFORM ###
 
+# Calculates the overlap <mo1|mo2> where mo1,mo2 are expressed in AO basis
+def overlap_mo(mo1_coeff,mo2_coeff,ao_overlap):
+    overlap = np.matmul(np.matmul(mo1_coeff,ao_overlap),mo2_coeff)
+    return overlap
+
+
+
 # Change the basis of a determinant from basis mo1 to basis mo2
 def order_permutation(permutation):
     dim = len(permutation)
@@ -52,6 +61,7 @@ def order_permutation(permutation):
 
 # change basis from a MO basis to another MO basis (or Lowdin). For example from HF basis to Lowdin.
 def mo_basis_change(det,mo1_basis_coeff,mo2_basis_coeff,ao_overlap):
+    print(det,mo1_basis_coeff,mo2_basis_coeff,ao_overlap)
     # represent MOs from the initial basis in terms of the second basis
     mo1_in_mo2_basis = np.zeros((mo2_basis_coeff.shape[1],mo1_basis_coeff.shape[1]))
     for col_index_mo1 in range(mo1_basis_coeff.shape[1]):
@@ -177,14 +187,15 @@ class mc_state:
 
     # normalize the coefficients of the determinants
     def normalize(self,threshold):
-        self.cumul_coeff(threshold)
+        self.cumul(threshold)
         N2 = 0
         for coeff in self.coeffs:
             N2 += coeff**2
-        self.coeffs = list(np.array(coeff_list)/np.sqrt(N2))
+        self.coeffs = list(np.array(self.coeffs)/np.sqrt(N2))
 
     # return the norm of the state
-    def norm(self):
+    def norm(self,threshold=1e-10):
+        self.cumul(threshold)
         overlap = 0
         for bra,coeff_bra in zip(self.dets,self.coeffs):
             for ket,coeff_ket in zip(self.dets,self.coeffs):
@@ -204,12 +215,14 @@ class mc_state:
         new_dets = []
         new_coeffs = []
         for det,coeff in zip(self.dets,self.coeffs):
+
             det_temp,coeff_temp = mo_basis_change(det,mo1_basis_coeff,mo2_basis_coeff,ao_overlap)
+            print(det_temp,coeff_temp,"step1")
             new_dets += det_temp
-            new_coeffs += list(array(coeff_temp)*coeff)
+            new_coeffs += list(np.array(coeff_temp)*coeff)
         self.dets = new_dets
         self.coeffs = new_coeffs
-        self.cumul_coeff(threshold)
+        self.cumul(threshold)
     
             
 
