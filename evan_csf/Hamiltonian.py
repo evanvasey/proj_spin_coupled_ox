@@ -1,7 +1,8 @@
 import numpy as np
+from scipy import linalg
 from RDM import get_one_rdm_mc_fast,get_two_rdm_mc_fast,get_spatial_one_rdm_fast,get_spatial_two_rdm_fast 
 from Lowdin_Orthogonalisation import get_symmetric_mo_coeffs
-from MO_tools import change_h_basis,change_g_basis,mo_basis_change,get_hf_coeffs
+from MO_tools import change_h_basis,change_g_basis,mo_basis_change,get_hf_coeffs,overlap_mo
 from CSF_tools import normalise_coeffs_det,overlap_CSF,overlap_matrix_CSF
 from sloc_states import get_sloc_empty
 from pyscf import scf
@@ -172,8 +173,45 @@ def get_Ecurve_CSF_RHF(r_array,RHF_states,list_CSF_dets,list_CSF_coeffs,molecule
         if HF_coeffs is not None:
             hf_coeffs = get_hf_coeffs(HF_coeffs,lowdin_coeffs,overlap)
             
-        print(lowdin_coeffs) 
-        print(overlap)
+        #print(hf_coeffs)
+        #print(lowdin_coeffs,"lowdin_coeffs") 
+        #print(overlap,"overlap")
+        #sl1 = overlap_mo((hf_coeffs[:,0]+hf_coeffs[:,1])/np.sqrt(2),lowdin_coeffs[:,0],overlap)
+        #sl2 = overlap_mo((hf_coeffs[:,0]+hf_coeffs[:,1])/np.sqrt(2),lowdin_coeffs[:,1],overlap)
+        #sl3 = overlap_mo((hf_coeffs[:,0]+hf_coeffs[:,1])/np.sqrt(2),lowdin_coeffs[:,2],overlap)
+        #sl4 = overlap_mo((hf_coeffs[:,0]+hf_coeffs[:,1])/np.sqrt(2),lowdin_coeffs[:,3],overlap)
+        #
+        #sr1 = overlap_mo((hf_coeffs[:,0]-hf_coeffs[:,1])/np.sqrt(2),lowdin_coeffs[:,0],overlap)
+        #sr2 = overlap_mo((hf_coeffs[:,0]-hf_coeffs[:,1])/np.sqrt(2),lowdin_coeffs[:,1],overlap)
+        #sr3 = overlap_mo((hf_coeffs[:,0]-hf_coeffs[:,1])/np.sqrt(2),lowdin_coeffs[:,2],overlap)
+        #sr4 = overlap_mo((hf_coeffs[:,0]-hf_coeffs[:,1])/np.sqrt(2),lowdin_coeffs[:,3],overlap)
+
+
+        #st1 = overlap_mo((hf_coeffs[:,0]+hf_coeffs[:,2])/np.sqrt(2),lowdin_coeffs[:,0],overlap)
+        #st2 = overlap_mo((hf_coeffs[:,0]+hf_coeffs[:,2])/np.sqrt(2),lowdin_coeffs[:,1],overlap)
+        #st3 = overlap_mo((hf_coeffs[:,0]+hf_coeffs[:,2])/np.sqrt(2),lowdin_coeffs[:,2],overlap)
+        #st4 = overlap_mo((hf_coeffs[:,0]+hf_coeffs[:,2])/np.sqrt(2),lowdin_coeffs[:,3],overlap)
+        #
+        #sb1 = overlap_mo((hf_coeffs[:,0]-hf_coeffs[:,2])/np.sqrt(2),lowdin_coeffs[:,0],overlap)
+        #sb2 = overlap_mo((hf_coeffs[:,0]-hf_coeffs[:,2])/np.sqrt(2),lowdin_coeffs[:,1],overlap)
+        #sb3 = overlap_mo((hf_coeffs[:,0]-hf_coeffs[:,2])/np.sqrt(2),lowdin_coeffs[:,2],overlap)
+        #sb4 = overlap_mo((hf_coeffs[:,0]-hf_coeffs[:,2])/np.sqrt(2),lowdin_coeffs[:,3],overlap)
+
+        #print(round(sl1,3),round(sl2,3),round(sl3,3),round(sl4,3),"sigma L")
+        #print(round(sr1,3),round(sr2,3),round(sr3,3),round(sr4,3),"sigma R")
+        #print(round(st1,3),round(st2,3),round(st3,3),round(st4,3),"sigma T")
+        #print(round(sb1,3),round(sb2,3),round(sb3,3),round(sb4,3),"sigma B")
+
+
+
+
+
+
+
+
+
+
+
         # to save cube files that allows to visualise the orbitals with VMD
         #tools.cubegen.orbital(mol, 'rhf_1.cube', hf.mo_coeff[:, 0]) 
         #tools.cubegen.orbital(mol, 'rhf_2.cube', hf.mo_coeff[:, 1]) 
@@ -188,10 +226,13 @@ def get_Ecurve_CSF_RHF(r_array,RHF_states,list_CSF_dets,list_CSF_coeffs,molecule
         
         # transform the basis of RHF states into lowdin basis
         RHF_dets_list,RHF_coeffs_list = RHF_change_basis_func(RHF_states,hf_coeffs,lowdin_coeffs,overlap)
-        print(RHF_dets_list,RHF_coeffs_list)
         
         # get the states semi localised (core and csf)
         sloc_states_dets,sloc_states_coeffs = get_sloc_func(hf_coeffs,lowdin_coeffs,overlap,sloc_grouped)
+        #sloc_states_coeffs[2][0] = np.sqrt(2)/4
+        #sloc_states_coeffs[2][1] = np.sqrt(2)/4
+        #sloc_states_coeffs[2][6] = np.sqrt(2)/4
+        #sloc_states_coeffs[2][7] = np.sqrt(2)/4
                                                                                                             
         # get the list of states for the hamiltonian matrix
         dets_list_matrix = RHF_dets_list + list_CSF_dets + sloc_states_dets 
@@ -201,18 +242,25 @@ def get_Ecurve_CSF_RHF(r_array,RHF_states,list_CSF_dets,list_CSF_coeffs,molecule
         H_matrix = get_H_CSF_matrix(dets_list_matrix,coeffs_list_matrix,h_lowdin,g_lowdin,mol.energy_nuc())
         S = overlap_matrix_CSF(dets_list_matrix,coeffs_list_matrix)
         S[np.abs(S) < 1e-10] = 0
+        print(S,"S")
         S_inv = np.linalg.inv(S)
         S_inv_H_matrix = np.matmul(S_inv,H_matrix)
+        #print(S_inv_H_matrix,"s inv H matrix")
         eigenvalues,eigenvectors = np.linalg.eig(S_inv_H_matrix)
         eigenvalue_min = eigenvalues[0]
-                                                                                                            
+                        
+        eig_val,eig_vect = linalg.eig(H_matrix,S)
+        #print(eig_val,"eig val")
+        #print(eig_vect,"eig vect")
         # select the eigenvector corresponding to the lowest eigenvalue
-        print(eigenvalues)
+        #print(eigenvalues,"eigenvalues")
         for eigenvalue,eigenvector in zip(eigenvalues,eigenvectors.T):
             if eigenvalue <= eigenvalue_min:
                 eigenvalue_min = eigenvalue
                 eigenvector_min = eigenvector
                                                                                                             
+        #print(eigenvalue_min,"eigenvalue min")
+        #print(eigenvector_min,"eigenvector min")
         dets_list = []
         coeffs_list = []
         for dets,coeffs,ci in zip(dets_list_matrix,coeffs_list_matrix,eigenvector_min):

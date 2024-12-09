@@ -1,7 +1,7 @@
 import numpy as np 
 from RDM import get_pf_spin_operator
 from MO_tools import mo_basis_change
-from CSF_tools import round_coeff_zero,cumul_coeff
+from CSF_tools import round_coeff_zero,cumul_coeff,normalise_coeffs_det
 
 
 

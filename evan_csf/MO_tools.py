@@ -86,7 +86,6 @@ def order_permutation(permutation):
 
 # change basis from a MO basis to another MO basis (or Lowdin). For example from HF basis to Lowdin.
 def mo_basis_change(det,mo1_basis_coeff,mo2_basis_coeff,ao_overlap):
-    print(det,mo1_basis_coeff,mo2_basis_coeff,ao_overlap)
     # represent MOs from the initial basis in terms of the second basis
     mo1_in_mo2_basis = np.zeros((mo2_basis_coeff.shape[1],mo1_basis_coeff.shape[1]))
     for col_index_mo1 in range(mo1_basis_coeff.shape[1]):

@@ -21,7 +21,7 @@ def H4_mol(r):
     mol.build(
             atom = f'''H 0 0 0; H 0 {r} 0; H 0 {r} {r}; H 0 0 {r}''',
             basis = 'sto-3g',
-            symmetry= True,
+            symmetry= False,
             spin=0,
             charge = 0)
 

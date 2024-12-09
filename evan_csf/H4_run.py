@@ -42,10 +42,26 @@ r_array = np.arange(0.5,3.55,0.05)
 RHF_dets = [[1.0,1,0,1,0,1,0,1,0],[1.0,1,1,0,0,1,1,0,0]]
 CSF_dets = [csf_list_dets,csf_list_dets_permute]
 CSF_coeffs = [csf_list_coeffs,csf_list_coeffs]
+print(CSF_dets)
+print(CSF_coeffs)
+CSF_dets = []
+CSF_coeffs = []
+CSF_dets = [csf_list_dets + csf_list_dets_permute]
+CSF_coeffs = [csf002.coeffs + csf002.coeffs]
+csf_list_dets = [[1.0,1,0,1,0,0,1,0,1],[1.0,1,0,0,1,0,1,1,0],[1.0,0,1,1,0,1,0,0,1],[1.0,0,1,0,1,1,0,1,0]]
+csf_list_coeffs = [-1/2,-1/2,-1/2,-1/2]
+csf_list_dets_permute = [[1.0,0,1,0,1,1,0,1,0],[1.0,1,1,0,0,0,0,1,1],[1.0,0,0,1,1,1,1,0,0],[1.0,1,0,1,0,0,1,0,1]]
+csf_list_coeffs_permute = [1/2,1/2,1/2,1/2]
+CSF_dets = [csf_list_dets+csf_list_dets_permute]
+CSF_coeffs = [csf_list_coeffs+csf_list_coeffs]
+
+
+
 
 hf_coeffs = np.array([[1,1,1,1],[1,1,-1,-1],[1,-1.0,-1.0,1.0],[1.0,-1.0,1.0,-1.0]])
 
-get_Ecurve_CSF_RHF(r_array,RHF_dets,CSF_dets,CSF_coeffs,H4_mol,HF_coeffs=hf_coeffs,number_sloc_states=4,sloc_grouped=False,get_sloc_func=get_sloc_H4,RHF_states_grouped=False,savetxt="data/H4_curve")
+#get_Ecurve_CSF_RHF(r_array,RHF_dets,CSF_dets,CSF_coeffs,H4_mol,HF_coeffs=hf_coeffs,number_sloc_states=4,sloc_grouped=False,get_sloc_func=get_sloc_H4,RHF_states_grouped=False,savetxt="data/H4_curve")
+get_Ecurve_CSF_RHF(r_array,RHF_dets,CSF_dets,CSF_coeffs,H4_mol,HF_coeffs=hf_coeffs,number_sloc_states=1,sloc_grouped=True,get_sloc_func=get_sloc_H4,RHF_states_grouped=True,savetxt="data/H4_curve")
 
 
 
@@ -73,7 +89,7 @@ CSF_coeffs = [csf_list_coeffs,csf_list_coeffs]
 
 hf_coeffs = np.array([[1,1,0,1],[1,0,1,-1],[1,-1.0,0,1.0],[1.0,0,-1.0,-1.0]])
 
-get_Ecurve_CSF_RHF(r_array,RHF_dets,CSF_dets,CSF_coeffs,H4_mol,HF_coeffs=hf_coeffs,number_sloc_states=4,sloc_grouped=False,get_sloc_func=get_sloc_H4,RHF_states_grouped=False,savetxt="data/H4_curvepyscf")
+#get_Ecurve_CSF_RHF(r_array,RHF_dets,CSF_dets,CSF_coeffs,H4_mol,HF_coeffs=hf_coeffs,number_sloc_states=4,sloc_grouped=False,get_sloc_func=get_sloc_H4,RHF_states_grouped=False,savetxt="data/H4_curvepyscf")
 
 
 

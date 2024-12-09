@@ -63,6 +63,7 @@ def overlap_matrix_CSF(list_states_dets,list_states_coeffs):
     for i,(bra_dets,bra_coeffs) in enumerate(zip(list_states_dets,list_states_coeffs)):
         for j,(ket_dets,ket_coeffs) in enumerate(zip(list_states_dets,list_states_coeffs)):
             S[i,j] = overlap_CSF(bra_dets,bra_coeffs,ket_dets,ket_coeffs)
+
     return S
 
 
